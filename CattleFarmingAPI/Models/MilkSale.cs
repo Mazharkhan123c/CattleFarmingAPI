@@ -22,5 +22,6 @@ namespace CattleFarmingAPI.Models
         public Nullable<decimal> Earn { get; set; }
         public string Note { get; set; }
         public string CattleType { get; set; }
+        public int FarmId { get; set; }
     }
 }

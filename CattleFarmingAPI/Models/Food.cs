@@ -21,5 +21,6 @@ namespace CattleFarmingAPI.Models
         public Nullable<int> Price { get; set; }
         public Nullable<System.DateTime> ExpiryDate { get; set; }
         public string CattleTag { get; set; }
+        public int FarmId { get; set; }
     }
 }

@@ -18,5 +18,6 @@ namespace CattleFarmingAPI.Models
         public string CattleTag { get; set; }
         public string Date { get; set; }
         public string Weight1 { get; set; }
+        public int FarmId { get; set; }
     }
 }

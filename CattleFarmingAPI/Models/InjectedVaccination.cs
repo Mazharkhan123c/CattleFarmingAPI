@@ -19,5 +19,6 @@ namespace CattleFarmingAPI.Models
         public int VaccinationID { get; set; }
         public string CattleTag { get; set; }
         public Nullable<int> DoseNo { get; set; }
+        public int FarmId { get; set; }
     }
 }

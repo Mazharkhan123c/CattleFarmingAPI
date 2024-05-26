@@ -19,5 +19,6 @@ namespace CattleFarmingAPI.Models
         public string Duration { get; set; }
         public Nullable<int> TotalDose { get; set; }
         public Nullable<int> Price { get; set; }
+        public int FarmId { get; set; }
     }
 }

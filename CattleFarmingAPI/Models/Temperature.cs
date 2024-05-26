@@ -18,5 +18,6 @@ namespace CattleFarmingAPI.Models
         public string Temperature1 { get; set; }
         public string Date { get; set; }
         public string Time { get; set; }
+        public int FarmId { get; set; }
     }
 }

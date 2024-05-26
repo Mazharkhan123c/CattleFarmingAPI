@@ -19,5 +19,6 @@ namespace CattleFarmingAPI.Models
         public Nullable<decimal> Amount { get; set; }
         public int CustomerID { get; set; }
         public string CattleTag { get; set; }
+        public int FarmId { get; set; }
     }
 }

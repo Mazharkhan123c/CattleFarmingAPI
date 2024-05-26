@@ -147,28 +147,265 @@ namespace CattleFarmingAPI.Controllers
             db.SaveChanges();
             return Request.CreateResponse(HttpStatusCode.OK, "Milk Deleted");
         }
+
+
+
         [HttpGet]
-        public HttpResponseMessage CattleTotalMilk()
+        public HttpResponseMessage CattleTypeTotalMilk(int farmId, string type)
         {
-            var request = HttpContext.Current.Request;
-            string type = request["type"];
-            //var result = (from c in db.Cattle
-            //              join m in db.MilkCollection
-            //              on c.ID equals m.CattleID
-            //              select new { TotalMilk = m.TotalMilk, Type = c.CattleCategory }
-            //           ).Where(n => n.Type == type
-            //           ).Sum(n=>n.TotalMilk);
+            // Query to calculate total milk for a given farmId and cattle type
+            if (type == "TotalMilk")
+            {
+                var result = (from c in db.Cattle
+                              join m in db.MilkCollection on c.Tag equals m.CattleTag
+                              where c.FarmID == farmId
+                              select m.TotalMilk
+                             ).Sum();
 
-            //OR
+                return Request.CreateResponse(HttpStatusCode.OK, new { TotalMilk = result });
+            }
+            else
+            {
+                var result = (from c in db.Cattle
+                              join m in db.MilkCollection on c.Tag equals m.CattleTag
+                              where c.FarmID == farmId && c.CattleType == type
+                              group m by c.CattleType into g
+                              select new { TotalMilk = g.Sum(x => x.TotalMilk) }
+                            ).SingleOrDefault();
 
-            var result = (from c in db.Cattle
-                          join m in db.MilkCollection on c.Tag equals m.CattleTag
-                          where c.CattleType == type
-                          group m by c.CattleType into g
-                          select new { TotalMilk = g.Sum(x => x.TotalMilk) }
-                   ).SingleOrDefault();
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            }
 
-            return Request.CreateResponse(HttpStatusCode.OK, result);
         }
+
+
+
+        ////--------------------------------get Avg Milk of last 5 days
+        //[HttpGet]
+        //public HttpResponseMessage SearchAvgCattleMilkByTagAndFarm(string tag, int farmid)
+        //{
+        //    if (string.IsNullOrEmpty(tag))
+        //    {
+        //        return Request.CreateResponse(HttpStatusCode.BadRequest, "Cattle tag is required.");
+        //    }
+
+        //    // Find the cattle with the specified tag and farm ID
+        //    var cattle = db.Cattle.FirstOrDefault(c => c.Tag == tag && c.FarmID == farmid);
+        //    if (cattle == null)
+        //    {
+        //        return Request.CreateResponse(HttpStatusCode.NotFound, "Cattle not found.");
+        //    }
+
+        //    // Get the current date
+        //    var currentDate = DateTime.Now;
+
+        //    // Calculate the date 5 days ago
+        //    var startDate = currentDate.AddDays(-5);
+
+        //    // Retrieve milk collection records for the last 5 days for the given cattle tag and farm ID
+        //    var milkCollections = db.MilkCollection
+        //        .Where(m => m.CattleTag == tag && m.FarmId == farmid && DateTime.Parse(m.Date) >= startDate)
+        //        .ToList();
+
+        //    if (!milkCollections.Any())
+        //    {
+        //        return Request.CreateResponse(HttpStatusCode.NotFound, "No milk collection records found for the last 5 days.");
+        //    }
+
+        //    // Calculate the average milk
+        //    var avgMilk = milkCollections.Average(m => m.TotalMilk) ?? 0;
+
+        //    // Create the view model
+        //    var viewAvgMilk = new AverageMilkOfCattle
+        //    {
+        //        Tag = tag,
+        //        CattleType = cattle.CattleType,
+        //        AvgMilk = avgMilk
+        //    };
+
+        //    return Request.CreateResponse(HttpStatusCode.OK, viewAvgMilk);
+        //}
+
+
+        //[HttpGet]
+        //public HttpResponseMessage GetAverageMilkForAllCattle(int farmid)
+        //{
+        //    // Find all cattle for the specified farm ID
+        //    var cattleList = db.Cattle.Where(c => c.FarmID == farmid).ToList();
+
+        //    if (!cattleList.Any())
+        //    {
+        //        return Request.CreateResponse(HttpStatusCode.NotFound, "No cattle found for the specified farm ID.");
+        //    }
+
+        //    // Get the current date
+        //    var currentDate = DateTime.Now;
+
+        //    // Calculate the date 5 days ago
+        //    var startDate = currentDate.AddDays(-5);
+
+        //    // List to hold average milk data for each cattle
+        //    var averageMilkList = new List<AverageMilkOfCattle>();
+
+        //    foreach (var cattle in cattleList)
+        //    {
+        //        // Retrieve milk collection records for the last 5 days for the current cattle
+        //        var milkCollections = db.MilkCollection
+        //            .Where(m => m.CattleTag == cattle.Tag && m.FarmId == farmid && DateTime.Parse(m.Date) >= startDate)
+        //            .ToList();
+
+        //        // Calculate the average milk
+        //        var avgMilk = milkCollections.Any() ? milkCollections.Average(m => m.TotalMilk) ?? 0 : 0;
+
+        //        // Add the average milk data to the list
+        //        averageMilkList.Add(new AverageMilkOfCattle
+        //        {
+        //            Tag = cattle.Tag,
+        //            CattleType = cattle.CattleType,
+        //            AvgMilk = avgMilk
+        //        });
+        //    }
+
+        //    return Request.CreateResponse(HttpStatusCode.OK, averageMilkList);
+        //}
+
+        //--------------below is the code of avg milk of cattle for all time
+        [HttpGet]
+        public HttpResponseMessage GetAverageMilkForSpecificCattleTag(string tag, int farmid)
+        {
+            if (string.IsNullOrEmpty(tag))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Cattle tag is required.");
+            }
+
+            // Find the cattle with the specified tag and farm ID
+            var cattle = db.Cattle.FirstOrDefault(c => c.Tag == tag && c.FarmID == farmid);
+            if (cattle == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.NotFound, "Cattle not found.");
+            }
+
+            // Retrieve all milk collection records for the specified cattle tag
+            var milkCollections = db.MilkCollection
+                .Where(m => m.CattleTag == tag && m.FarmId == farmid)
+                .ToList();
+
+            if (!milkCollections.Any())
+            {
+                return Request.CreateResponse(HttpStatusCode.NotFound, "No milk records found for the specified cattle tag.");
+            }
+
+            // Calculate the average milk
+            var avgMilk = milkCollections.Average(m => m.TotalMilk) ?? 0;
+            var avgMilkFormatted = Math.Round(avgMilk, 2);
+
+            // Create the view model
+            var viewAvgMilk = new AverageMilkOfCattle
+            {
+                Tag = tag,
+                CattleType = cattle.CattleType,
+                AvgMilk = avgMilkFormatted
+            };
+
+            return Request.CreateResponse(HttpStatusCode.OK, viewAvgMilk);
+        }
+
+
+
+
+
+        [HttpGet]
+        public HttpResponseMessage GetAverageMilkForAllCattleOfAllTime(int farmid)
+        {
+            // Find all cattle for the specified farm ID
+            var cattleList = db.Cattle.Where(c => c.FarmID == farmid).ToList();
+
+            if (!cattleList.Any())
+            {
+                return Request.CreateResponse(HttpStatusCode.NotFound, "No cattle found for the specified farm ID.");
+            }
+
+            // List to hold average milk data for each cattle
+            var averageMilkList = new List<AverageMilkOfCattle>();
+
+            foreach (var cattle in cattleList)
+            {
+                // Retrieve all milk collection records for the current cattle
+                var milkCollections = db.MilkCollection
+                    .Where(m => m.CattleTag == cattle.Tag && m.FarmId == farmid)
+                    .ToList();
+
+                // Calculate the average milk
+                var avgMilk = milkCollections.Any() ? milkCollections.Average(m => m.TotalMilk) ?? 0 : 0;
+                var avgMilkFormatted = Math.Round(avgMilk, 2);
+
+                // Add the average milk data to the list
+                averageMilkList.Add(new AverageMilkOfCattle
+                {
+                    Tag = cattle.Tag,
+                    CattleType = cattle.CattleType,
+                    AvgMilk = avgMilkFormatted
+                });
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, averageMilkList);
+        }
+
+
+        //this below function only calculate cattle type milk not total milk
+        //[HttpGet]
+        //public HttpResponseMessage CattleTypeTotalMilk(int farmId, string type)
+        //{
+        //    // Query to calculate total milk for a given farmId and cattle type
+        //    var result = (from c in db.Cattle
+        //                  join m in db.MilkCollection on c.Tag equals m.CattleTag
+        //                  where c.FarmID == farmId && c.CattleType == type
+        //                  group m by c.CattleType into g
+        //                  select new { TotalMilk = g.Sum(x => x.TotalMilk) }
+        //      ).SingleOrDefault();
+
+        //    return Request.CreateResponse(HttpStatusCode.OK, result);
+
+        //}
+
+
+        //[HttpGet]
+        //public HttpResponseMessage CattleTypeTotalMilk(int farmId, string type)
+        //{
+        //    // Query to calculate total milk for a given farmId and cattle type
+
+        //    var result = (from c in db.Cattle
+        //                  join m in db.MilkCollection on c.Tag equals m.CattleTag
+        //                  where c.FarmID == farmId && c.CattleType == type
+        //                  group m by c.CattleType into g
+        //                  select new { TotalMilk = g.Sum(x => x.TotalMilk) }
+        //                 ).SingleOrDefault();
+
+        //    return Request.CreateResponse(HttpStatusCode.OK, result);
+        //}
+
+        //[HttpGet]
+        //public HttpResponseMessage CattleTotalMilk()
+        //{
+        //    var request = HttpContext.Current.Request;
+        //    string type = request["type"];
+        //    //var result = (from c in db.Cattle
+        //    //              join m in db.MilkCollection
+        //    //              on c.ID equals m.CattleID
+        //    //              select new { TotalMilk = m.TotalMilk, Type = c.CattleCategory }
+        //    //           ).Where(n => n.Type == type
+        //    //           ).Sum(n=>n.TotalMilk);
+
+        //    //OR
+
+        //    var result = (from c in db.Cattle
+        //                  join m in db.MilkCollection on c.Tag equals m.CattleTag
+        //                  where c.CattleType == type
+        //                  group m by c.CattleType into g
+        //                  select new { TotalMilk = g.Sum(x => x.TotalMilk) }
+        //           ).SingleOrDefault();
+
+        //    return Request.CreateResponse(HttpStatusCode.OK, result);
+        //}
     }
 }

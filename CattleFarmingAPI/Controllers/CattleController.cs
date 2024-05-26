@@ -171,85 +171,85 @@ namespace CattleFarmingAPI.Controllers
             db.SaveChanges();
             return Request.CreateResponse(HttpStatusCode.OK, "Cattle Deleted");
         }
-        [HttpGet]
-        public HttpResponseMessage ViewAllCatel()
-        {
-            //List<ViewCattle> vc=(from c in db.Cattle
-            //                    join v in db.InjectedVaccination
-            //                    on c.ID equals v.CattleID 
-            //                    select new ViewCattle {ID =c.ID, Weight= c.Weight, isVaccinated=v.CattleID ==0 ? "Not Vaccinated ":"Vaccinated" }).ToList();
+        //[HttpGet]
+        //public HttpResponseMessage ViewAllCatel()
+        //{
+        //    //List<ViewCattle> vc=(from c in db.Cattle
+        //    //                    join v in db.InjectedVaccination
+        //    //                    on c.ID equals v.CattleID 
+        //    //                    select new ViewCattle {ID =c.ID, Weight= c.Weight, isVaccinated=v.CattleID ==0 ? "Not Vaccinated ":"Vaccinated" }).ToList();
 
-            var cattles = db.Cattle.ToList();
-            var vcattle = db.InjectedVaccination.ToList();
-            List<ViewCattle> clist = new List<ViewCattle>();
-            foreach (var a in cattles)
-            {
-                var isVaccinated = vcattle.Any(v => v.CattleTag == a.Tag);
+        //    var cattles = db.Cattle.ToList();
+        //    var vcattle = db.InjectedVaccination.ToList();
+        //    List<ViewCattle> clist = new List<ViewCattle>();
+        //    foreach (var a in cattles)
+        //    {
+        //        var isVaccinated = vcattle.Any(v => v.CattleTag == a.Tag);
 
-                if (isVaccinated)
-                {
-                    clist.Add(new ViewCattle { Tag = a.Tag, Weight = a.Weight, CattleType = a.CattleType, isVaccinated = "Vaccinated" });
-                }
-                else
-                {
-                    clist.Add(new ViewCattle { Tag = a.Tag, Weight = a.Weight, CattleType = a.CattleType, isVaccinated = "Not Vaccinated" });
-                }
-            }
-            return Request.CreateResponse(HttpStatusCode.OK, clist);
-        }
-
-
+        //        if (isVaccinated)
+        //        {
+        //            clist.Add(new ViewCattle { Tag = a.Tag, Weight = a.Weight, CattleType = a.CattleType, isVaccinated = "Vaccinated" });
+        //        }
+        //        else
+        //        {
+        //            clist.Add(new ViewCattle { Tag = a.Tag, Weight = a.Weight, CattleType = a.CattleType, isVaccinated = "Not Vaccinated" });
+        //        }
+        //    }
+        //    return Request.CreateResponse(HttpStatusCode.OK, clist);
+        //}
 
 
 
 
-        [HttpGet]
-        public HttpResponseMessage FilterAllCattles(string status, string type, string isVaccinate)
-        {
-            List<Cattle> clist = db.Cattle.ToList();
-            List<ViewCattle> filterCattleList = new List<ViewCattle>();
-            List<InjectedVaccination> filterVaccList = db.InjectedVaccination.ToList();
 
-            // Apply status filter if provided
-            if (!string.IsNullOrEmpty(status))
-            {
-                clist = clist.Where(n => n.Status == status).ToList();
-            }
 
-            // Apply type filter if provided
-            if (!string.IsNullOrEmpty(type))
-            {
-                clist = clist.Where(n => n.CattleType == type).ToList();
-            }
+        //[HttpGet]
+        //public HttpResponseMessage FilterAllCattles(string status, string type, string isVaccinate)
+        //{
+        //    List<Cattle> clist = db.Cattle.ToList();
+        //    List<ViewCattle> filterCattleList = new List<ViewCattle>();
+        //    List<InjectedVaccination> filterVaccList = db.InjectedVaccination.ToList();
 
-            // Process vaccination status filter
-            if (!string.IsNullOrEmpty(isVaccinate))
-            {
-                foreach (var cattle in clist)
-                {
-                    bool isVaccinated = filterVaccList.Any(v => v.CattleTag == cattle.Tag);
-                    if (isVaccinate == "Vaccinated" && isVaccinated)
-                    {
-                        filterCattleList.Add(new ViewCattle { Tag = cattle.Tag, Weight = cattle.Weight, CattleType = cattle.CattleType, isVaccinated = "Vaccinated" });
-                    }
-                    else if (isVaccinate == "Not Vaccinated" && !isVaccinated)
-                    {
-                        filterCattleList.Add(new ViewCattle { Tag = cattle.Tag, Weight = cattle.Weight, CattleType = cattle.CattleType, isVaccinated = "Not Vaccinated" });
-                    }
-                }
-            }
-            else
-            {
-                // If no vaccination status filter is provided, include all based on the previous filters
-                foreach (var cattle in clist)
-                {
-                    bool isVaccinated = filterVaccList.Any(v => v.CattleTag == cattle.Tag);
-                    filterCattleList.Add(new ViewCattle { Tag = cattle.Tag, Weight = cattle.Weight, CattleType = cattle.CattleType, isVaccinated = isVaccinated ? "Vaccinated" : "Not Vaccinated" });
-                }
-            }
+        //    // Apply status filter if provided
+        //    if (!string.IsNullOrEmpty(status))
+        //    {
+        //        clist = clist.Where(n => n.Status == status).ToList();
+        //    }
 
-            return Request.CreateResponse(HttpStatusCode.OK, filterCattleList);
-        }
+        //    // Apply type filter if provided
+        //    if (!string.IsNullOrEmpty(type))
+        //    {
+        //        clist = clist.Where(n => n.CattleType == type).ToList();
+        //    }
+
+        //    // Process vaccination status filter
+        //    if (!string.IsNullOrEmpty(isVaccinate))
+        //    {
+        //        foreach (var cattle in clist)
+        //        {
+        //            bool isVaccinated = filterVaccList.Any(v => v.CattleTag == cattle.Tag);
+        //            if (isVaccinate == "Vaccinated" && isVaccinated)
+        //            {
+        //                filterCattleList.Add(new ViewCattle { Tag = cattle.Tag, Weight = cattle.Weight, CattleType = cattle.CattleType, isVaccinated = "Vaccinated" });
+        //            }
+        //            else if (isVaccinate == "Not Vaccinated" && !isVaccinated)
+        //            {
+        //                filterCattleList.Add(new ViewCattle { Tag = cattle.Tag, Weight = cattle.Weight, CattleType = cattle.CattleType, isVaccinated = "Not Vaccinated" });
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        // If no vaccination status filter is provided, include all based on the previous filters
+        //        foreach (var cattle in clist)
+        //        {
+        //            bool isVaccinated = filterVaccList.Any(v => v.CattleTag == cattle.Tag);
+        //            filterCattleList.Add(new ViewCattle { Tag = cattle.Tag, Weight = cattle.Weight, CattleType = cattle.CattleType, isVaccinated = isVaccinated ? "Vaccinated" : "Not Vaccinated" });
+        //        }
+        //    }
+
+        //    return Request.CreateResponse(HttpStatusCode.OK, filterCattleList);
+        //}
 
 
 
@@ -301,6 +301,74 @@ namespace CattleFarmingAPI.Controllers
 
         //    return Request.CreateResponse(HttpStatusCode.OK, filterCattleList);
         //}
+
+
+        //[Route("api/Cattle/SearchCattleByTag")]
+        //[HttpGet]
+        //public HttpResponseMessage SearchCattleByTag(string tag)
+        //{
+        //    if (string.IsNullOrEmpty(tag))
+        //    {
+        //        return Request.CreateResponse(HttpStatusCode.BadRequest, "Cattle tag is required.");
+        //    }
+
+        //    // Find the cattle with the specified tag
+        //    var cattle = db.Cattle.FirstOrDefault(c => c.Tag == tag);
+        //    if (cattle == null)
+        //    {
+        //        return Request.CreateResponse(HttpStatusCode.NotFound, "Cattle not found.");
+        //    }
+
+        //    // Check if the cattle is vaccinated
+        //    bool isVaccinated = db.InjectedVaccination.Any(v => v.CattleTag == cattle.Tag);
+
+        //    // Create the view model
+        //    var viewCattle = new ViewCattle
+        //    {
+        //        Tag = cattle.Tag,
+        //        Weight = cattle.Weight,
+        //        CattleType = cattle.CattleType,
+        //        isVaccinated = isVaccinated ? "Vaccinated" : "Not Vaccinated"
+        //    };
+
+        //    return Request.CreateResponse(HttpStatusCode.OK, viewCattle);
+        //}
+
+
+
+
+    //      [Route("api/Cattle/SearchCattleByTagAndFarm")]
+        [HttpGet]
+        public HttpResponseMessage SearchCattleByTagAndFarm(string tag, int farmid)
+        {
+            if (string.IsNullOrEmpty(tag))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Cattle tag is required.");
+            }
+
+            // Find the cattle with the specified tag and farm ID
+            var cattle = db.Cattle.FirstOrDefault(c => c.Tag == tag && c.FarmID == farmid);
+            if (cattle == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.NotFound, "Cattle not found.");
+            }
+
+            // Check if the cattle is vaccinated
+            bool isVaccinated = db.InjectedVaccination.Any(v => v.CattleTag == cattle.Tag);
+
+            // Create the view model
+            var viewCattle = new ViewCattle
+            {
+                Tag = cattle.Tag,
+                Weight = cattle.Weight,
+                CattleType = cattle.CattleType,
+                isVaccinated = isVaccinated ? "Vaccinated" : "Not Vaccinated"
+            };
+
+            return Request.CreateResponse(HttpStatusCode.OK, viewCattle);
+        }
+
+
 
         [Route("api/Cattle/FarmAllCattles")]
         [HttpGet]
