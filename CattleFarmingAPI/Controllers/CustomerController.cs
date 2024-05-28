@@ -39,7 +39,19 @@ namespace CattleFarmingAPI.Controllers
 
         }
 
-
+        [HttpGet]
+        public HttpResponseMessage GetCustomer()
+        {
+            try
+            {
+                List<Customer> customers = db.Customer.ToList();
+                return Request.CreateResponse(HttpStatusCode.OK, customers);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An error occurred while retrieving the Customer list.");
+            }
+        }
 
 
         [HttpGet]

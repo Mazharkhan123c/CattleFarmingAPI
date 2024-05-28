@@ -12,16 +12,14 @@ namespace CattleFarmingAPI.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class MilkSale
+    public partial class FoodConsume
     {
         public int ID { get; set; }
-        public Nullable<decimal> Quantity { get; set; }
+        public string CattleTyp { get; set; }
+        public string FoodItem { get; set; }
         public string Date { get; set; }
-        public Nullable<decimal> PerLtrPrice { get; set; }
-        public int CustomerID { get; set; }
-        public Nullable<decimal> Earn { get; set; }
-        public string Note { get; set; }
-        public string CattleType { get; set; }
+        public string CattleTag { get; set; }
+        public Nullable<decimal> Quantity { get; set; }
         public int FarmId { get; set; }
     }
 }

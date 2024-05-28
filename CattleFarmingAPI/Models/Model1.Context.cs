@@ -29,7 +29,9 @@ namespace CattleFarmingAPI.Models
         public virtual DbSet<CattleSale> CattleSale { get; set; }
         public virtual DbSet<Customer> Customer { get; set; }
         public virtual DbSet<Farm> Farm { get; set; }
-        public virtual DbSet<Food> Food { get; set; }
+        public virtual DbSet<FoodCalculate> FoodCalculate { get; set; }
+        public virtual DbSet<FoodConsume> FoodConsume { get; set; }
+        public virtual DbSet<FoodStock> FoodStock { get; set; }
         public virtual DbSet<InjectedVaccination> InjectedVaccination { get; set; }
         public virtual DbSet<MilkCollection> MilkCollection { get; set; }
         public virtual DbSet<MilkSale> MilkSale { get; set; }

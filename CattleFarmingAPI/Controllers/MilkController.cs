@@ -149,35 +149,107 @@ namespace CattleFarmingAPI.Controllers
         }
 
 
+        // in thsi below function milk sale table not include
+        //[HttpGet]
+        //public HttpResponseMessage CattleTypeTotalMilk(int farmId, string type)
+        //{
+        //    // Query to calculate total milk for a given farmId and cattle type
+        //    if (type == "TotalMilk")
+        //    {
+        //        var result = (from c in db.Cattle
+        //                      join m in db.MilkCollection on c.Tag equals m.CattleTag
+        //                      where c.FarmID == farmId
+        //                      select m.TotalMilk
+        //                     ).Sum();
+
+        //        return Request.CreateResponse(HttpStatusCode.OK, new { TotalMilk = result });
+        //    }
+        //    else
+        //    {
+        //        var result = (from c in db.Cattle
+        //                      join m in db.MilkCollection on c.Tag equals m.CattleTag
+        //                      where c.FarmID == farmId && c.CattleType == type
+        //                      group m by c.CattleType into g
+        //                      select new { TotalMilk = g.Sum(x => x.TotalMilk) }
+        //                    ).SingleOrDefault();
+
+        //        return Request.CreateResponse(HttpStatusCode.OK, result);
+        //    }
+
+        //}
 
         [HttpGet]
         public HttpResponseMessage CattleTypeTotalMilk(int farmId, string type)
         {
-            // Query to calculate total milk for a given farmId and cattle type
             if (type == "TotalMilk")
             {
-                var result = (from c in db.Cattle
-                              join m in db.MilkCollection on c.Tag equals m.CattleTag
-                              where c.FarmID == farmId
-                              select m.TotalMilk
-                             ).Sum();
+                var totalMilkCollected = (from m in db.MilkCollection
+                                          join c in db.Cattle on m.CattleTag equals c.Tag
+                                          where c.FarmID == farmId
+                                          select m.TotalMilk).DefaultIfEmpty(0).Sum();
 
-                return Request.CreateResponse(HttpStatusCode.OK, new { TotalMilk = result });
+                var totalMilkSold = db.MilkSale
+                                     .Where(s => s.FarmId == farmId)
+                                     .Select(s => (decimal?)s.Quantity) // Cast to nullable decimal to handle no records case
+                                     .DefaultIfEmpty(0).Sum();
+
+                var remainingMilk = totalMilkCollected - totalMilkSold.GetValueOrDefault();
+
+                return Request.CreateResponse(HttpStatusCode.OK, new { TotalMilk = remainingMilk });
             }
             else
             {
-                var result = (from c in db.Cattle
-                              join m in db.MilkCollection on c.Tag equals m.CattleTag
-                              where c.FarmID == farmId && c.CattleType == type
-                              group m by c.CattleType into g
-                              select new { TotalMilk = g.Sum(x => x.TotalMilk) }
-                            ).SingleOrDefault();
+                var totalMilkCollected = (from m in db.MilkCollection
+                                          join c in db.Cattle on m.CattleTag equals c.Tag
+                                          where c.FarmID == farmId && c.CattleType == type
+                                          select m.TotalMilk).DefaultIfEmpty(0).Sum();
 
-                return Request.CreateResponse(HttpStatusCode.OK, result);
+                var totalMilkSold = db.MilkSale
+                                     .Where(s => s.FarmId == farmId && s.CattleType == type)
+                                     .Select(s => (decimal?)s.Quantity) // Cast to nullable decimal to handle no records case
+                                     .DefaultIfEmpty(0).Sum();
+
+                var remainingMilk = totalMilkCollected - totalMilkSold.GetValueOrDefault();
+
+                return Request.CreateResponse(HttpStatusCode.OK, new { TotalMilk = remainingMilk });
             }
-
         }
 
+
+        //[HttpGet]
+        //public HttpResponseMessage CattleTypeTotalMilk(int farmId, string type)
+        //{
+        //    if (type == "TotalMilk")
+        //    {
+        //        var totalMilkCollected = (from m in db.MilkCollection
+        //                                  join c in db.Cattle on m.CattleTag equals c.Tag
+        //                                  where c.FarmID == farmId
+        //                                  select m.TotalMilk).Sum();
+
+        //        var totalMilkSold = db.MilkSale
+        //                             .Where(s => s.FarmId == farmId)
+        //                             .Sum(s => s.Quantity);
+
+        //        var remainingMilk = totalMilkCollected - totalMilkSold;
+
+        //        return Request.CreateResponse(HttpStatusCode.OK, new { TotalMilk = remainingMilk });
+        //    }
+        //    else
+        //    {
+        //        var totalMilkCollected = (from m in db.MilkCollection
+        //                                  join c in db.Cattle on m.CattleTag equals c.Tag
+        //                                  where c.FarmID == farmId && c.CattleType == type
+        //                                  select m.TotalMilk).Sum();
+
+        //        var totalMilkSold = db.MilkSale
+        //                             .Where(s => s.FarmId == farmId && s.CattleType == type)
+        //                             .Sum(s => s.Quantity);
+
+        //        var remainingMilk = totalMilkCollected - totalMilkSold;
+
+        //        return Request.CreateResponse(HttpStatusCode.OK, new { TotalMilk = remainingMilk });
+        //    }
+        //}
 
 
         ////--------------------------------get Avg Milk of last 5 days
@@ -352,6 +424,23 @@ namespace CattleFarmingAPI.Controllers
         }
 
 
+
+        [HttpPost]
+        public HttpResponseMessage MilkSale(List<MilkSale> milksale)
+        {
+            try
+            {
+                // Assuming "db" is your database context
+                db.MilkSale.AddRange(milksale);
+                db.SaveChanges();
+
+                return Request.CreateResponse(HttpStatusCode.OK, $"{milksale.Count} milk added successfully");
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error adding milk Sale: {ex.Message}");
+            }
+        }
         //this below function only calculate cattle type milk not total milk
         //[HttpGet]
         //public HttpResponseMessage CattleTypeTotalMilk(int farmId, string type)

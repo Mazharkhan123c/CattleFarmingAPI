@@ -13,26 +13,43 @@ namespace CattleFarmingAPI.Controllers
     {
         Cattle_Farming_ManagementEntities db = new Cattle_Farming_ManagementEntities();
         [HttpGet]
-        public HttpResponseMessage GetAllVaccinations()
+        public HttpResponseMessage GetAllVaccinationsStock()
         {
             List<Vaccination> vaccinations = new List<Vaccination>();
             return Request.CreateResponse(HttpStatusCode.OK, db.Vaccination);
         }
 
-        [HttpPost]
-        public HttpResponseMessage AddVaccination()
-        {
-            HttpRequest form = HttpContext.Current.Request;
-            Vaccination vaccination = new Vaccination();
-            vaccination.Type = form["Type"];
-          //  vaccination.ValidityPeriod = form["ValidityPeriod"];
-           // vaccination.Description = form["Description"];
-       
 
-            db.Vaccination.Add(vaccination);
-            db.SaveChanges();
-            return Request.CreateResponse(HttpStatusCode.OK, $"Vaccination Added {vaccination.Type}");
+        [HttpPost]
+        public HttpResponseMessage SaveVaccineStock(Vaccination c)
+        {
+            try
+            {
+                // Assuming "db" is your database context
+                db.Vaccination.Add(c);
+                db.SaveChanges();
+
+                return Request.CreateResponse(HttpStatusCode.OK, $"Vaccine {c.Type} Save successfully");
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error in Saving Vaccination: {ex.Message}");
+            }
         }
+        //[HttpPost]
+        //public HttpResponseMessage AddVaccination()
+        //{
+        //    HttpRequest form = HttpContext.Current.Request;
+        //    Vaccination vaccination = new Vaccination();
+        //    vaccination.Type = form["Type"];
+        //  //  vaccination.ValidityPeriod = form["ValidityPeriod"];
+        //   // vaccination.Description = form["Description"];
+
+
+        //    db.Vaccination.Add(vaccination);
+        //    db.SaveChanges();
+        //    return Request.CreateResponse(HttpStatusCode.OK, $"Vaccination Added {vaccination.Type}");
+        //}
 
         [HttpPost]
         public HttpResponseMessage UpdateVaccination()

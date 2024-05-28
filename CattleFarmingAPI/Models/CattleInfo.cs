@@ -12,8 +12,11 @@ namespace CattleFarmingAPI.Models
         public Nullable<decimal> Weight { get; set; }
         public string Gender { get; set; }
         public Nullable<int> Age { get; set; }
+        public string PurchaseDate { get; set; }
+        public Nullable<int> PurchaseCost { get; set; }
+        public Nullable<decimal> Expense { get; set; }
         public string VaccineType { get; set; }
-        public Nullable<System.DateTime> Date { get; set; }
+        public Nullable<System.DateTime> VaccineDate { get; set; }
       
     }
 }

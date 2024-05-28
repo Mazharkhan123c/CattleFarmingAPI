@@ -50,17 +50,38 @@
           <Property Name="Name" Type="varchar(max)" />
           <Property Name="City" Type="varchar" MaxLength="50" />
         </EntityType>
-        <EntityType Name="Food">
+        <EntityType Name="FoodCalculate">
           <Key>
             <PropertyRef Name="ID" />
           </Key>
           <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="Quantity" Type="varchar" MaxLength="50" />
+          <Property Name="Quantity" Type="decimal" Precision="18" Scale="0" />
           <Property Name="Date" Type="varchar" MaxLength="50" />
           <Property Name="Item" Type="varchar" MaxLength="50" />
-          <Property Name="Price" Type="int" />
-          <Property Name="ExpiryDate" Type="date" />
-          <Property Name="CattleTag" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Price" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="FarmId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="FoodConsume">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="CattleTyp" Type="varchar" MaxLength="50" />
+          <Property Name="FoodItem" Type="varchar" MaxLength="50" />
+          <Property Name="Date" Type="varchar" MaxLength="50" />
+          <Property Name="CattleTag" Type="varchar" MaxLength="50" />
+          <Property Name="Quantity" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="FarmId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="FoodStock">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Quantity" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="Date" Type="varchar" MaxLength="50" />
+          <Property Name="Item" Type="varchar" MaxLength="50" />
+          <Property Name="Price" Type="decimal" Precision="18" Scale="0" />
           <Property Name="FarmId" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="InjectedVaccination">
@@ -92,7 +113,7 @@
             <PropertyRef Name="ID" />
           </Key>
           <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="Quantity" Type="int" />
+          <Property Name="Quantity" Type="decimal" Precision="18" Scale="0" />
           <Property Name="Date" Type="varchar" MaxLength="50" />
           <Property Name="PerLtrPrice" Type="decimal" Precision="18" Scale="0" />
           <Property Name="CustomerID" Type="int" Nullable="false" />
@@ -142,6 +163,7 @@
           <Property Name="Duration" Type="varchar" MaxLength="50" />
           <Property Name="TotalDose" Type="int" />
           <Property Name="Price" Type="int" />
+          <Property Name="Date" Type="varchar" MaxLength="50" />
           <Property Name="FarmId" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="Weight">
@@ -159,7 +181,9 @@
           <EntitySet Name="CattleSale" EntityType="Self.CattleSale" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Customer" EntityType="Self.Customer" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Farm" EntityType="Self.Farm" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="Food" EntityType="Self.Food" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="FoodCalculate" EntityType="Self.FoodCalculate" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="FoodConsume" EntityType="Self.FoodConsume" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="FoodStock" EntityType="Self.FoodStock" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="InjectedVaccination" EntityType="Self.InjectedVaccination" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="MilkCollection" EntityType="Self.MilkCollection" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="MilkSale" EntityType="Self.MilkSale" Schema="dbo" store:Type="Tables" />
@@ -219,17 +243,38 @@
           <Property Name="Name" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
           <Property Name="City" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
-        <EntityType Name="Food">
+        <EntityType Name="FoodCalculate">
           <Key>
             <PropertyRef Name="ID" />
           </Key>
           <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Quantity" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Quantity" Type="Decimal" Precision="18" Scale="0" />
           <Property Name="Date" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Item" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Price" Type="Int32" />
-          <Property Name="ExpiryDate" Type="DateTime" Precision="0" />
-          <Property Name="CattleTag" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Price" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="FarmId" Type="Int32" Nullable="false" />
+        </EntityType>
+        <EntityType Name="FoodConsume">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="CattleTyp" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="FoodItem" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Date" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="CattleTag" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Quantity" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="FarmId" Type="Int32" Nullable="false" />
+        </EntityType>
+        <EntityType Name="FoodStock">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Quantity" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="Date" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Item" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Price" Type="Decimal" Precision="18" Scale="0" />
           <Property Name="FarmId" Type="Int32" Nullable="false" />
         </EntityType>
         <EntityType Name="InjectedVaccination">
@@ -261,7 +306,7 @@
             <PropertyRef Name="ID" />
           </Key>
           <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Quantity" Type="Int32" />
+          <Property Name="Quantity" Type="Decimal" Precision="18" Scale="0" />
           <Property Name="Date" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="PerLtrPrice" Type="Decimal" Precision="18" Scale="0" />
           <Property Name="CustomerID" Type="Int32" Nullable="false" />
@@ -311,6 +356,7 @@
           <Property Name="Duration" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="TotalDose" Type="Int32" />
           <Property Name="Price" Type="Int32" />
+          <Property Name="Date" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="FarmId" Type="Int32" Nullable="false" />
         </EntityType>
         <EntityType Name="Weight">
@@ -328,7 +374,9 @@
           <EntitySet Name="CattleSale" EntityType="Self.CattleSale" />
           <EntitySet Name="Customer" EntityType="Self.Customer" />
           <EntitySet Name="Farm" EntityType="Self.Farm" />
-          <EntitySet Name="Food" EntityType="Self.Food" />
+          <EntitySet Name="FoodCalculate" EntityType="Self.FoodCalculate" />
+          <EntitySet Name="FoodConsume" EntityType="Self.FoodConsume" />
+          <EntitySet Name="FoodStock" EntityType="Self.FoodStock" />
           <EntitySet Name="InjectedVaccination" EntityType="Self.InjectedVaccination" />
           <EntitySet Name="MilkCollection" EntityType="Self.MilkCollection" />
           <EntitySet Name="MilkSale" EntityType="Self.MilkSale" />
@@ -393,16 +441,39 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Food">
-            <EntityTypeMapping TypeName="Model.Food">
-              <MappingFragment StoreEntitySet="Food">
+          <EntitySetMapping Name="FoodCalculate">
+            <EntityTypeMapping TypeName="Model.FoodCalculate">
+              <MappingFragment StoreEntitySet="FoodCalculate">
                 <ScalarProperty Name="ID" ColumnName="ID" />
                 <ScalarProperty Name="Quantity" ColumnName="Quantity" />
                 <ScalarProperty Name="Date" ColumnName="Date" />
                 <ScalarProperty Name="Item" ColumnName="Item" />
                 <ScalarProperty Name="Price" ColumnName="Price" />
-                <ScalarProperty Name="ExpiryDate" ColumnName="ExpiryDate" />
+                <ScalarProperty Name="FarmId" ColumnName="FarmId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="FoodConsume">
+            <EntityTypeMapping TypeName="Model.FoodConsume">
+              <MappingFragment StoreEntitySet="FoodConsume">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="CattleTyp" ColumnName="CattleTyp" />
+                <ScalarProperty Name="FoodItem" ColumnName="FoodItem" />
+                <ScalarProperty Name="Date" ColumnName="Date" />
                 <ScalarProperty Name="CattleTag" ColumnName="CattleTag" />
+                <ScalarProperty Name="Quantity" ColumnName="Quantity" />
+                <ScalarProperty Name="FarmId" ColumnName="FarmId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="FoodStock">
+            <EntityTypeMapping TypeName="Model.FoodStock">
+              <MappingFragment StoreEntitySet="FoodStock">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="Quantity" ColumnName="Quantity" />
+                <ScalarProperty Name="Date" ColumnName="Date" />
+                <ScalarProperty Name="Item" ColumnName="Item" />
+                <ScalarProperty Name="Price" ColumnName="Price" />
                 <ScalarProperty Name="FarmId" ColumnName="FarmId" />
               </MappingFragment>
             </EntityTypeMapping>
@@ -491,6 +562,7 @@
                 <ScalarProperty Name="Duration" ColumnName="Duration" />
                 <ScalarProperty Name="TotalDose" ColumnName="TotalDose" />
                 <ScalarProperty Name="Price" ColumnName="Price" />
+                <ScalarProperty Name="Date" ColumnName="Date" />
                 <ScalarProperty Name="FarmId" ColumnName="FarmId" />
               </MappingFragment>
             </EntityTypeMapping>
