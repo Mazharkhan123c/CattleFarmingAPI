@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 using CattleFarmingAPI.Models;
+using System.Web.Http.Results;
 namespace CattleFarmingAPI.Controllers
 {
     public class MilkController : ApiController
@@ -20,43 +21,345 @@ namespace CattleFarmingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, db.MilkCollection);
         }
 
+        [HttpGet]
+      //  [Route("api/Milk/GetAliveCattleWithMilk/{tag}")]
+        public HttpResponseMessage GetAliveCattleWithMilk(string tag)
+        {
+            var query = db.Cattle
+                .Where(c => c.Status == "Alive" && c.Gender == "Female" && c.Tag == tag)
+                .GroupJoin(
+                    db.MilkCollection,
+                    cattle => cattle.Tag,
+                    milk => milk.CattleTag,
+                    (cattle, milks) => new { Cattle = cattle, Milks = milks }
+                )
+                .Select(g => new
+                {
+                    Tag = g.Cattle.Tag,
+                    MilkRecord = g.Milks
+                        .OrderByDescending(milk => milk.Date)
+                        .FirstOrDefault(),
+                    g.Cattle.CattleType,
+                    g.Cattle.DOB
+                })
+                .FirstOrDefault(); // Ensure we get only the first (and only) matching record
+
+            if (query == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.NotFound, "Cattle not found.");
+            }
+
+            // Process the result to handle null values and calculate availability
+            var result = new CattleMilkInfo
+            {
+                Tag = query.Tag,
+                TotalMilk = query.MilkRecord?.TotalMilk ?? 0, // Handle null values here
+                IsAvailableToGiveMilk = IsCattleAvailableToGiveMilk(query.CattleType, DateTime.Parse(query.DOB))
+            };
+
+            // Check if the cattle is available to give milk
+            if (!result.IsAvailableToGiveMilk)
+            {
+                return Request.CreateResponse(HttpStatusCode.NoContent, "Cattle is not available to give milk.");
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, result);
+        }
+
+        //private bool IsCattleAvailableToGiveMilk(string cattleType, DateTime dob)
+        //{
+        //    int ageYears = CalculateAge(dob);
+
+        //    if ((cattleType == "Cow" || cattleType == "Buffalo") && ageYears >= 2)
+        //    {
+        //        return true;
+        //    }
+        //    else if (cattleType == "Goat" && ageYears >= 1)
+        //    {
+        //        return true;
+        //    }
+
+        //    return false;
+        //}
+
+        //private int CalculateAge(DateTime dob)
+        //{
+        //    var today = DateTime.Today;
+        //    var ageYears = today.Year - dob.Year;
+        //    var ageMonths = today.Month - dob.Month;
+        //    var ageDays = today.Day - dob.Day;
+
+        //    if (ageDays < 0)
+        //    {
+        //        ageMonths--;
+        //        ageDays += DateTime.DaysInMonth(today.Year, (today.Month - 1) < 1 ? 12 : today.Month - 1);
+        //    }
+
+        //    if (ageMonths < 0)
+        //    {
+        //        ageYears--;
+        //        ageMonths += 12;
+        //    }
+
+        //    return ageYears;
+        //}
+
+
 
         [HttpPost]
-       
-         public HttpResponseMessage SaveMilkCollection(MilkCollection c)
+[Route("api/Milk/PostUpdatedSingleCattleMilkData")]
+public HttpResponseMessage PostUpdatedSingleCattleMilkData([FromBody] MilkCollection updatedMilk)
+{
+    var existingMilk = db.MilkCollection.FirstOrDefault(m => m.CattleTag == updatedMilk.CattleTag && m.Date == updatedMilk.Date && m.Time == updatedMilk.Time);
+    if (existingMilk != null)
+    {
+        existingMilk.TotalMilk = updatedMilk.TotalMilk;
+    }
+    else
+    {
+        db.MilkCollection.Add(updatedMilk);
+    }
 
+    db.SaveChanges();
+    return Request.CreateResponse(HttpStatusCode.OK);
+
+}
+        //   [HttpGet]
+        //   [Route("api/Milk/GetAliveCattleWithMilk")]
+        //   public HttpResponseMessage GetAliveCattleWithMilk()
+        //   {
+        //       // Assuming db is your DbContext
+        //       var query = db.Cattle
+        //   .Where(c => c.Status == "Alive" && c.Gender == "Female")
+        //   .GroupJoin(
+        //       db.MilkCollection,
+        //       cattle => cattle.Tag,
+        //       milk => milk.CattleTag,
+        //       (cattle, milks) => new { Cattle = cattle, Milks = milks }
+        //   )
+        //   .Select(g => new
+        //   {
+        //       Tag = g.Cattle.Tag,
+        //       MilkRecords = g.Milks
+        //           .OrderByDescending(milk => milk.Date)
+        //           .FirstOrDefault()
+        //   })
+        //   .ToList(); // Execute the query here
+
+
+        //       var result = query
+        //.Select(g => new CattleMilkInfo
+        //{
+        //    Tag = g.Tag,
+        //    TotalMilk = g.MilkRecords?.TotalMilk ?? 0 // Handle null values here
+        //})
+        //.ToList();
+
+        //       return Request.CreateResponse(HttpStatusCode.OK, result);
+        //   }
+
+        //  ----------------------------This below method get cattlesmilk with age greater the 2 and 1 year
+        [HttpGet]
+      //  [Route("api/Milk/GetAliveCattleWithMilk")]
+        public HttpResponseMessage GetAliveCattleWithMilk()
+        {
+            var query = db.Cattle
+       .Where(c => c.Status == "Alive" && c.Gender == "Female")
+       .GroupJoin(
+           db.MilkCollection,
+           cattle => cattle.Tag,
+           milk => milk.CattleTag,
+           (cattle, milks) => new { Cattle = cattle, Milks = milks }
+       )
+       .ToList() // Execute the query here to work with in-memory data
+       .Select(g => new
+       {
+           Tag = g.Cattle.Tag,
+           MilkRecords = g.Milks
+               .OrderByDescending(milk => milk.Date)
+               .FirstOrDefault(),
+           g.Cattle.CattleType,
+           g.Cattle.DOB
+       })
+       .ToList(); // Ensure we are working with in-memory data for subsequent calculations
+
+            // Process the results to handle null values and calculate availability
+            var result = query
+                .Select(g => new CattleMilkInfo
+                {
+                    Tag = g.Tag,
+                    TotalMilk = g.MilkRecords?.TotalMilk ?? 0, // Handle null values here
+                    IsAvailableToGiveMilk = IsCattleAvailableToGiveMilk(g.CattleType, DateTime.Parse(g.DOB))
+                })
+                        .Where(info => info.IsAvailableToGiveMilk)
+                        .ToList();
+
+            // Return or use the result as needed
+
+
+            return Request.CreateResponse(HttpStatusCode.OK, result);
+        }
+
+
+        private bool IsCattleAvailableToGiveMilk(string cattleType, DateTime dob)
+        {
+
+            int ageYears = CalculateAge(dob);
+
+            //int age= ageYears.ToString().Length;
+
+            if ((cattleType == "Cow" || cattleType == "Buffalo") && ageYears >= 2)
+            {
+                return true;
+            }
+            else if (cattleType == "Goat" && ageYears >= 1)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private int CalculateAge(DateTime dob)
+        {
+            var today = DateTime.Today;
+            var ageYears = today.Year - dob.Year;
+            var ageMonths = today.Month - dob.Month;
+            var ageDays = today.Day - dob.Day;
+
+            if (ageDays < 0)
+            {
+                ageMonths--;
+                ageDays += DateTime.DaysInMonth(today.Year, (today.Month - 1) < 1 ? 12 : today.Month - 1);
+            }
+
+            if (ageMonths < 0)
+            {
+                ageYears--;
+                ageMonths += 12;
+            }
+
+            return ageYears;
+        }
+
+
+
+
+        [HttpPost]
+        public HttpResponseMessage PostUpdatedMilkData([FromBody] List<MilkCollection> updatedMilks)
+        {
+            foreach (var milk in updatedMilks)
+            {
+                var existingMilk = db.MilkCollection.FirstOrDefault(m => m.CattleTag == milk.CattleTag && m.Date == milk.Date && m.Time == milk.Time);
+                if (existingMilk != null)
+                {
+                    existingMilk.TotalMilk = milk.TotalMilk;
+                }
+                else
+                {
+                    db.MilkCollection.Add(milk);
+                }
+            }
+            db.SaveChanges();
+            return Request.CreateResponse(HttpStatusCode.OK);
+        }
+
+        //======================This below post method is correct but now requirements are changed now we post data in list
+      
+        [HttpPost]
+        //[Route("SaveMilkCollection")]
+        [Route("api/Milk/SaveMilkCollection")]
+        public HttpResponseMessage SaveMilkCollection([FromBody]  MilkCollection c)
         {
             try
             {
-                var milkCollect = db.MilkCollection.Where(s => s.CattleTag == c.CattleTag && s.Time == c.Time && s.Date == c.Date).FirstOrDefault();
-                var catle = db.Cattle.Where(s => s.Tag == c.CattleTag).FirstOrDefault();
-                if (catle != null)
+                // Find the cattle by tag
+                var cattle = db.Cattle.Where(s => s.Tag == c.CattleTag).FirstOrDefault();
+
+                // Check if the cattle exists
+                if (cattle == null)
                 {
-
-                    if (milkCollect != null)
-                    {
-
-                        return Request.CreateResponse(HttpStatusCode.OK, "Milk Already exsist");
-                    }
-                    else
-                    {
-                        db.MilkCollection.Add(c);
-                        db.SaveChanges();
-
-                        return Request.CreateResponse(HttpStatusCode.OK, $"Milk added successfully");
-                    } }
-                else {
-                    return Request.CreateResponse(HttpStatusCode.OK, "Cattle not exsist");
-
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "Cattle not exist");
                 }
-                
+
+                // Check if the cattle is female
+                if (cattle.Gender != "Female")
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "Male Cattle not give Milk");
+                }
+
+                // Check if the milk collection entry already exists
+                var milkCollect = db.MilkCollection
+                    .Where(s => s.CattleTag == c.CattleTag && s.Time == c.Time && s.Date == c.Date)
+                    .FirstOrDefault();
+
+                if (milkCollect != null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.Conflict, "Milk entry already exists");
+                }
+
+                // Add the milk collection entry
+                db.MilkCollection.Add(c);
+                db.SaveChanges();
+
+                return Request.CreateResponse(HttpStatusCode.OK, "Milk added successfully");
             }
             catch (Exception ex)
             {
-
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error adding Milk Collection: {ex.Message}");
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error adding milk collection: {ex.Message}");
             }
         }
+
+
+        //[HttpPost]
+
+        // public HttpResponseMessage SaveMilkCollection(MilkCollection c)
+
+        //{
+        //    try
+        //    {
+        //      //  var mcatle = db.Cattle.Where(s => s.Gender == "Female").ToList();
+        //        var milkCollect = db.MilkCollection.Where(s => s.CattleTag == c.CattleTag && s.Time == c.Time && s.Date == c.Date).FirstOrDefault();
+        //        var catle = db.Cattle.Where(s => s.Tag == c.CattleTag).FirstOrDefault();
+
+        //        //if (mcatle != null)
+        //        //{
+        //            if (catle != null)
+        //            {
+
+        //                if (milkCollect != null)
+        //                {
+
+        //                    return Request.CreateResponse(HttpStatusCode.OK, "Milk Already exsist");
+        //                }
+        //                else
+        //                {
+        //                    db.MilkCollection.Add(c);
+        //                    db.SaveChanges();
+
+        //                    return Request.CreateResponse(HttpStatusCode.OK, $"Milk added successfully");
+        //                }
+        //            }
+        //            else
+        //            {
+        //                return Request.CreateResponse(HttpStatusCode.OK, "Cattle not exsist");
+
+        //            }
+
+
+        //        //}
+        //        //else
+        //        //{
+        //        //    return Request.CreateResponse(HttpStatusCode.OK, "Male dont give this type of Milk");
+        //        //}
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+
+        //        return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error adding Milk Collection: {ex.Message}");
+        //    }
+        //}
 
 
 
@@ -108,8 +411,7 @@ namespace CattleFarmingAPI.Controllers
                 oldRecord.TotalMilk = mc.TotalMilk;
                 oldRecord.Time = mc.Time;
                 oldRecord.CattleTag = mc.CattleTag;
-                oldRecord.UsedMilk = mc.UsedMilk;
-                oldRecord.Note = mc.Note;
+               oldRecord.MilkAvailability = mc.MilkAvailability;
 
             //    db.Entry(oldRecord).State = System.Data.Entity.EntityState.Modified;
                 db.SaveChanges();
@@ -386,11 +688,48 @@ namespace CattleFarmingAPI.Controllers
 
 
 
+        //[HttpGet]
+        //public HttpResponseMessage GetAverageMilkForAllCattleOfAllTime(int farmid)
+        //{
+        //    // Find all cattle for the specified farm ID
+        //    var cattleList = db.Cattle.Where(c => c.FarmID == farmid).ToList();
+
+        //    if (!cattleList.Any())
+        //    {
+        //        return Request.CreateResponse(HttpStatusCode.NotFound, "No cattle found for the specified farm ID.");
+        //    }
+
+        //    // List to hold average milk data for each cattle
+        //    var averageMilkList = new List<AverageMilkOfCattle>();
+
+        //    foreach (var cattle in cattleList)
+        //    {
+        //        // Retrieve all milk collection records for the current cattle
+        //        var milkCollections = db.MilkCollection
+        //            .Where(m => m.CattleTag == cattle.Tag && m.FarmId == farmid)
+        //            .ToList();
+
+        //        // Calculate the average milk
+        //        var avgMilk = milkCollections.Any() ? milkCollections.Average(m => m.TotalMilk) ?? 0 : 0;
+        //        var avgMilkFormatted = Math.Round(avgMilk, 2);
+
+        //        // Add the average milk data to the list
+        //        averageMilkList.Add(new AverageMilkOfCattle
+        //        {
+        //            Tag = cattle.Tag,
+        //            CattleType = cattle.CattleType,
+        //            AvgMilk = avgMilkFormatted
+        //        });
+        //    }
+
+        //    return Request.CreateResponse(HttpStatusCode.OK, averageMilkList);
+        //}
+
         [HttpGet]
         public HttpResponseMessage GetAverageMilkForAllCattleOfAllTime(int farmid)
         {
             // Find all cattle for the specified farm ID
-            var cattleList = db.Cattle.Where(c => c.FarmID == farmid).ToList();
+            var cattleList = db.Cattle.Where(c => c.FarmID == farmid && c.Status == "Alive").ToList();
 
             if (!cattleList.Any())
             {
@@ -423,8 +762,6 @@ namespace CattleFarmingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, averageMilkList);
         }
 
-
-
         [HttpPost]
         public HttpResponseMessage MilkSale(List<MilkSale> milksale)
         {
@@ -441,6 +778,18 @@ namespace CattleFarmingAPI.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error adding milk Sale: {ex.Message}");
             }
         }
+
+
+
+
+
+        [HttpGet]
+        public HttpResponseMessage GetAllSaledMilk()
+        {
+            List<MilkSale> food = new List<MilkSale>();
+            return Request.CreateResponse(HttpStatusCode.OK, db.MilkSale);
+        }
+
         //this below function only calculate cattle type milk not total milk
         //[HttpGet]
         //public HttpResponseMessage CattleTypeTotalMilk(int farmId, string type)

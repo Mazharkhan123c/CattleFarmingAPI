@@ -18,12 +18,29 @@ namespace CattleFarmingAPI.Controllers
         Cattle_Farming_ManagementEntities db = new Cattle_Farming_ManagementEntities();
 
         //Funtion to get Record of All Food
-
         [HttpGet]
         public HttpResponseMessage GetAllFood()
         {
-            List<FoodStock> food = new List<FoodStock>();
+          //  var food = db.FoodStock.Where(s => s.FarmId == farmid).ToList();
+
+             List<FoodStock> food = new List<FoodStock>();
             return Request.CreateResponse(HttpStatusCode.OK, db.FoodStock);
+        }
+
+        //[HttpGet]
+        //public HttpResponseMessage GetAllFood(int farmid)
+        //{
+        //    var food=db.FoodStock.Where(s=> s.FarmId==farmid).ToList();
+
+        //   // List<FoodStock> food = new List<FoodStock>();
+        //    return Request.CreateResponse(HttpStatusCode.OK, food);
+        //}
+
+        [HttpGet]
+        public HttpResponseMessage GetRemainingFood()
+        {
+            List<FoodCalculate> food = new List<FoodCalculate>();
+            return Request.CreateResponse(HttpStatusCode.OK, db.FoodCalculate);
         }
 
 
@@ -108,22 +125,164 @@ namespace CattleFarmingAPI.Controllers
 
 
 
-        [HttpGet]
-        public HttpResponseMessage GetAllFoods()
-        {
-            List<FoodStock> food = new List<FoodStock>();
-            return Request.CreateResponse(HttpStatusCode.OK, db.FoodStock);
-        }
+        //---------------------------------theses below two functions run on postman but not in flutter
+
+        //[HttpPost]
+        //[Route("api/Food/SaveConsumeFood")]
+
+        //public HttpResponseMessage SaveConsumeFood(string type, string food, string date, int farmId)
+        //{
+        //    try
+        //    {
+        //        if (type == "Cow And Buffalo")
+        //        {
+        //            var fdata = db.FoodCalculate.Where(f => f.Item == food).First();
+        //            var clist = db.Cattle.Where(n => n.CattleType == "Cow" || n.CattleType == "Buffalo" && n.Status == "Alive").ToList();
+        //            int foodQty = int.Parse(fdata.Quantity.ToString());
+        //            int totalCattles = clist.Count();
+        //            if (totalCattles > 0)
+        //            {
+        //                int reqFood = totalCattles * 15;
+        //                if (foodQty >= reqFood)
+        //                {
+        //                    fdata.Quantity = fdata.Quantity - reqFood;
+        //                    db.SaveChanges();
+        //                    foreach (var c in clist)
+        //                    {
+        //                        FoodConsume fc = new FoodConsume();
+        //                        {
+
+        //                            fc.FoodItem = food;
+        //                            fc.CattleTyp = c.CattleType;
+        //                            fc.CattleTag = c.Tag;
+        //                            fc.Date = date;
+        //                            fc.Quantity = 15;
+        //                            fc.FarmId = 1;
+
+        //                        }
+        //                        db.FoodConsume.Add(fc);
+        //                        db.SaveChanges();
+        //                    }
+
+        //                }
+        //                else
+        //                {
+        //                    return Request.CreateResponse(HttpStatusCode.OK, $"Food Quantity is Low ");
+        //                }
+        //            }
+
+        //        }
+
+        //        else if (type == "Goat")
+        //        {
+        //            var fdata = db.FoodCalculate.Where(f => f.Item == food).First();
+        //            var clist = db.Cattle.Where(n => n.CattleType == "Goat" && n.Status == "Alive").ToList();
+        //            int foodQty = int.Parse(fdata.Quantity.ToString());
+        //            int totalCattles = clist.Count();
+        //            if (totalCattles > 0)
+        //            {
+        //                int reqFood = totalCattles * 3;
+        //                if (foodQty >= reqFood)
+        //                {
+        //                    fdata.Quantity = fdata.Quantity - reqFood;
+        //                    db.SaveChanges();
+        //                    foreach (var c in clist)
+        //                    {
+        //                        FoodConsume fc = new FoodConsume();
+        //                        {
+
+        //                            fc.FoodItem = food;
+        //                            fc.CattleTyp = c.CattleType;
+        //                            fc.CattleTag = c.Tag;
+        //                            fc.Date = date;
+        //                            fc.Quantity = 3;
+        //                            fc.FarmId = farmId;
+
+        //                        }
+        //                        db.FoodConsume.Add(fc);
+        //                        db.SaveChanges();
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    return Request.CreateResponse(HttpStatusCode.OK, $"Food Quantity is Low ");
+        //                }
+        //            }
+        //        }
+        //        return Request.CreateResponse(HttpStatusCode.OK, $"Consume Food added successfully");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error in Saving Food: {ex.Message}");
+        //    }
+
+
+        //}
+
+
+
+        //[HttpPost]
+        //[Route("api/Food/ConsumeFoodSpecialCase")]
+        //public HttpResponseMessage ConsumeFoodSpecialCase(string tag, string food, string date,double quantity, int farmId)
+        //{
+        //    try
+        //    {
+        //        var fdata = db.FoodCalculate.Where(f => f.Item == food).First();
+        //        var catle = db.Cattle.Where(n => n.Tag == tag && n.Status == "Alive").SingleOrDefault();
+        //        int foodQty = int.Parse(fdata.Quantity.ToString());
+        //       // int totalCattles = clist.Count();
+
+
+        //            if (foodQty >= quantity)
+        //            {
+        //                fdata.Quantity = fdata.Quantity -decimal.Parse( quantity.ToString());
+        //                db.SaveChanges();
+
+        //                    FoodConsume fc = new FoodConsume();
+        //                    {
+
+        //                        fc.FoodItem = food;
+        //                        fc.CattleTyp = catle.CattleType;
+        //                        fc.CattleTag = tag;
+        //                        fc.Date = date;
+        //                        fc.Quantity = decimal.Parse( quantity.ToString());
+        //                        fc.FarmId = farmId;
+
+        //                    }
+        //                    db.FoodConsume.Add(fc);
+        //                    db.SaveChanges();
+
+        //            }
+        //            else
+        //            {
+        //                return Request.CreateResponse(HttpStatusCode.OK, $"Food Quantity is Low ");
+        //            }
+
+        //        return Request.CreateResponse(HttpStatusCode.OK, "Food Consume in Special Case Save Succesfully");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Error in Saving Special Food Consume: {ex.Message}");
+        //    }
+        //}
+
+
 
         [HttpPost]
-        public HttpResponseMessage saveConsumeFood(string type, string food, string date, string farmId)
+        [Route("api/Food/SaveConsumeFood")]
+        public HttpResponseMessage SaveConsumeFood([FromBody] dynamic data)
         {
             try
             {
-                if (type == "Cow and Buffalo")
+                string type = data.cattleType;
+                string food = data.fodderType;
+                string date = data.date;
+                int farmId = data.farmId;
+
+                if (type == "Cow And Buffalo")
                 {
                     var fdata = db.FoodCalculate.Where(f => f.Item == food).First();
-                    var clist = db.Cattle.Where(n => n.CattleType == "Cow" || n.CattleType == "Buffalo" && n.Status == "Alive").ToList();
+                    var clist = db.Cattle.Where(n => (n.CattleType == "Cow" || n.CattleType == "Buffalo") && n.Status == "Alive").ToList();
                     int foodQty = int.Parse(fdata.Quantity.ToString());
                     int totalCattles = clist.Count();
                     if (totalCattles > 0)
@@ -137,28 +296,23 @@ namespace CattleFarmingAPI.Controllers
                             {
                                 FoodConsume fc = new FoodConsume();
                                 {
-
                                     fc.FoodItem = food;
                                     fc.CattleTyp = c.CattleType;
                                     fc.CattleTag = c.Tag;
                                     fc.Date = date;
                                     fc.Quantity = 15;
                                     fc.FarmId = 1;
-
                                 }
                                 db.FoodConsume.Add(fc);
                                 db.SaveChanges();
                             }
-
                         }
                         else
                         {
                             return Request.CreateResponse(HttpStatusCode.OK, $"Food Quantity is Low ");
                         }
                     }
-
                 }
-
                 else if (type == "Goat")
                 {
                     var fdata = db.FoodCalculate.Where(f => f.Item == food).First();
@@ -176,14 +330,12 @@ namespace CattleFarmingAPI.Controllers
                             {
                                 FoodConsume fc = new FoodConsume();
                                 {
-
                                     fc.FoodItem = food;
                                     fc.CattleTyp = c.CattleType;
                                     fc.CattleTag = c.Tag;
                                     fc.Date = date;
                                     fc.Quantity = 3;
-                                    fc.FarmId = 1;
-
+                                    fc.FarmId = farmId;
                                 }
                                 db.FoodConsume.Add(fc);
                                 db.SaveChanges();
@@ -201,15 +353,54 @@ namespace CattleFarmingAPI.Controllers
             {
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error in Saving Food: {ex.Message}");
             }
-
-
-
-
-
-
-
-
         }
+
+        [HttpPost]
+        [Route("api/Food/ConsumeFoodSpecialCase")]
+        public HttpResponseMessage ConsumeFoodSpecialCase([FromBody] dynamic data)
+        {
+            try
+            {
+                string tag = data.tag;
+                string food = data.foodType;
+                string date = data.date;
+                double quantity = data.quantity;
+                int farmId = data.farmId;
+
+                var fdata = db.FoodCalculate.Where(f => f.Item == food).First();
+                var catle = db.Cattle.Where(n => n.Tag == tag && n.Status == "Alive").SingleOrDefault();
+                int foodQty = int.Parse(fdata.Quantity.ToString());
+
+                if (foodQty >= quantity)
+                {
+                    fdata.Quantity = fdata.Quantity - decimal.Parse(quantity.ToString());
+                    db.SaveChanges();
+
+                    FoodConsume fc = new FoodConsume();
+                    {
+                        fc.FoodItem = food;
+                        fc.CattleTyp = catle.CattleType;
+                        fc.CattleTag = tag;
+                        fc.Date = date;
+                        fc.Quantity = decimal.Parse(quantity.ToString());
+                        fc.FarmId = farmId;
+                    }
+                    db.FoodConsume.Add(fc);
+                    db.SaveChanges();
+                }
+                else
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, $"Food Quantity is Low ");
+                }
+                return Request.CreateResponse(HttpStatusCode.OK, "Food Consume in Special Case Save Successfully");
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Error in Saving Special Food Consume: {ex.Message}");
+            }
+        }
+
+
 
 
         //Function to Insert Record of Food

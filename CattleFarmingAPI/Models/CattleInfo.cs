@@ -7,16 +7,12 @@ namespace CattleFarmingAPI.Models
 {
     public class CattleInfo
     {
-      //  public int ID { get; set; }
-        public string Tag { get; set; }
-        public Nullable<decimal> Weight { get; set; }
+        public string Weight { get; set; }
         public string Gender { get; set; }
-        public Nullable<int> Age { get; set; }
+        public string Age { get; set; }
         public string PurchaseDate { get; set; }
-        public Nullable<int> PurchaseCost { get; set; }
-        public Nullable<decimal> Expense { get; set; }
+        public string PurchaseCost { get; set; }
         public string VaccineType { get; set; }
         public Nullable<System.DateTime> VaccineDate { get; set; }
-      
     }
 }

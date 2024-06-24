@@ -19,8 +19,7 @@ namespace CattleFarmingAPI.Models
         public Nullable<decimal> TotalMilk { get; set; }
         public string Time { get; set; }
         public string CattleTag { get; set; }
-        public Nullable<decimal> UsedMilk { get; set; }
-        public string Note { get; set; }
+        public Nullable<int> MilkAvailability { get; set; }
         public int FarmId { get; set; }
     }
 }

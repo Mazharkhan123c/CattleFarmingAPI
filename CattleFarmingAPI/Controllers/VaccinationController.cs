@@ -36,6 +36,44 @@ namespace CattleFarmingAPI.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error in Saving Vaccination: {ex.Message}");
             }
         }
+
+        [HttpPost]
+        public HttpResponseMessage SaveInjectedVaccine(InjectedVaccination c)
+        {
+            try
+            {
+                // Assuming "db" is your database context
+                db.InjectedVaccination.Add(c);
+                db.SaveChanges();
+
+                return Request.CreateResponse(HttpStatusCode.OK, $"Cattle {c.CattleTag} Vaccinated successfully");
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error in Saving inject Vaccination: {ex.Message}");
+            }
+        }
+
+
+
+        [HttpGet]
+        public IHttpActionResult GetLastInjectedVaccineForTag(string tag)
+        {
+            // Find the last injected vaccination record for the given tag
+            var lastInjected = db.InjectedVaccination
+                .Where(iv => iv.CattleTag == tag)
+                .OrderByDescending(iv => iv.Date)
+                .FirstOrDefault();
+
+            if (lastInjected == null)
+            {
+                return NotFound(); // Return 404 if not found
+            }
+
+            return Ok(lastInjected); // Return the last injected vaccination record
+        }
+
+
         //[HttpPost]
         //public HttpResponseMessage AddVaccination()
         //{

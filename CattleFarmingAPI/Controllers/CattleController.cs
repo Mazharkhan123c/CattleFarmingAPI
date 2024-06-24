@@ -14,7 +14,10 @@ namespace CattleFarmingAPI.Controllers
     public class CattleController : ApiController
     {
 
-        Cattle_Farming_ManagementEntities db = new Cattle_Farming_ManagementEntities();
+         Cattle_Farming_ManagementEntities db = new Cattle_Farming_ManagementEntities();
+
+
+      
 
 
 
@@ -55,7 +58,7 @@ namespace CattleFarmingAPI.Controllers
 
         //    return Ok("Image uploaded" + " Name:" + DeptName + "Row Effected:" + rowEffectd);
         //}
-      
+
 
         [HttpPost]
 
@@ -422,22 +425,7 @@ namespace CattleFarmingAPI.Controllers
 
 
 
-        //[HttpPost]
-        //public HttpResponseMessage SaleCattle(CattleSale c)
-        //{
-        //    try
-        //    {
-        //        // Assuming "db" is your database context
-        //        db.CattleSale.Add(c);
-        //        db.SaveChanges();
-
-        //        return Request.CreateResponse(HttpStatusCode.OK, $"Cattle {c.CattleTag} Sale successfully");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error in Saling Cattle: {ex.Message}");
-        //    }
-        //}
+    
 
         [HttpPost]
         public HttpResponseMessage SaleCattle(CattleSale c)
@@ -470,11 +458,16 @@ namespace CattleFarmingAPI.Controllers
             }
         }
 
+        [HttpGet]
+        public HttpResponseMessage GetAllSaledCattle()
+        {
+            List<CattleSale> food = new List<CattleSale>();
+            return Request.CreateResponse(HttpStatusCode.OK, db.CattleSale);
+        }
 
         //-----------------------ShowCattleInfo
-
         [HttpGet]
-        public HttpResponseMessage ShowCattleInfoByTagAndFarm(string tag, int farmid)
+        public HttpResponseMessage ShowCattleInfoByTag(string tag, int farmid)
         {
             if (string.IsNullOrEmpty(tag))
             {
@@ -488,58 +481,184 @@ namespace CattleFarmingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Cattle not found.");
             }
 
-            // Calculate the age from DOB
+            // Calculate the exact age from DOB
             var dob = DateTime.Parse(cattle.DOB);
-            var age = DateTime.Now.Year - dob.Year;
-            if (DateTime.Now.DayOfYear < dob.DayOfYear)
-            {
-                age--;
-            }
-
-            // Calculate the date 30 days ago
-            var startDate = DateTime.Now.AddDays(-30);
-
-            // Retrieve food consumption expense for the last 30 days
-            var foodExpenses = db.FoodStock
-                .Where(fs => DateTime.Parse(fs.Date) >= startDate && fs.FarmId == farmid)
-                .Sum(fs => fs.Price * fs.Quantity) ?? 0;
-
-            // Retrieve vaccination expense for the last 30 days
-            var vaccinationExpenses = db.Vaccination
-                .Where(v => DateTime.Parse(v.Date) >= startDate && v.FarmId == farmid)
-                .Sum(v => v.Price) ?? 0;
-
-            // Combine the expenses
-            var totalExpense = foodExpenses + vaccinationExpenses;
+            var ageSpan = CalculateAge(dob);
 
             // Retrieve the last vaccination details for the cattle
             var lastVaccination = (from iv in db.InjectedVaccination
                                    join v in db.Vaccination on iv.VaccinationID equals v.ID
                                    where iv.CattleTag == tag && iv.FarmId == farmid
-                                   orderby DateTime.Parse(iv.Date) descending
+                                   orderby iv.Date descending
                                    select new
                                    {
                                        v.Type,
                                        iv.Date
                                    }).FirstOrDefault();
 
+            // Convert the vaccination date outside the LINQ query
+            DateTime? vaccineDate = lastVaccination != null ? (DateTime?)DateTime.Parse(lastVaccination.Date) : null;
+
+            // Determine the purchase date
+            string purchaseDate = cattle.DOB == cattle.DateOfEntryFarm ? null : cattle.DateOfEntryFarm;
+
             // Create the view model
             var cattleInfo = new CattleInfo
             {
-                Tag = cattle.Tag,
-                Weight = cattle.Weight,
+                Weight = cattle.Weight.ToString(),
                 Gender = cattle.Gender,
-                Age = age,
-                PurchaseDate = cattle.DateOfEntryFarm,
-                PurchaseCost = cattle.Cost,
-                Expense = totalExpense,
+                Age = ageSpan,
+                PurchaseDate = purchaseDate,
+                PurchaseCost = cattle.Cost.ToString(),
+            
                 VaccineType = lastVaccination?.Type,
-                VaccineDate = lastVaccination != null ? DateTime.Parse(lastVaccination.Date) : (DateTime?)null
+                VaccineDate = vaccineDate,
             };
 
             return Request.CreateResponse(HttpStatusCode.OK, cattleInfo);
         }
-      
+
+        private string CalculateAge(DateTime dob)
+        {
+            var today = DateTime.Today;
+            var ageYears = today.Year - dob.Year;
+            var ageMonths = today.Month - dob.Month;
+            var ageDays = today.Day - dob.Day;
+
+            if (ageDays < 0)
+            {
+                ageMonths--;
+                ageDays += DateTime.DaysInMonth(today.Year, (today.Month - 1) < 1 ? 12 : today.Month - 1);
+            }
+
+            if (ageMonths < 0)
+            {
+                ageYears--;
+                ageMonths += 12;
+            }
+
+            return $"{ageYears} years, {ageMonths} months, {ageDays} days";
+        }
+
+
+
+        [HttpPost]
+        public HttpResponseMessage DeadCattle(Cattle c)
+        {
+            try
+            {
+                // Find the cattle by tag
+                var cattle = db.Cattle.SingleOrDefault(cat => cat.Tag == c.Tag && cat.FarmID == c.FarmID);
+
+                if (cattle != null)
+                {
+                    // Update the status of the cattle
+                    cattle.Status = "Dead"; // or any other status you want to set
+
+                    // Update the cost of the dead cattle
+                    cattle.CostOfDead = c.CostOfDead;
+
+                    // Save changes to the database
+                    db.SaveChanges();
+                }
+                else
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Cattle with tag {c.Tag} not found");
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, $"Cattle {c.Tag} marked as Dead with cost {c.CostOfDead}");
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error in marking cattle as dead: {ex.Message}");
+            }
+        }
+
+
+        //[HttpPost]
+        //public HttpResponseMessage DeadCattle(Cattle c)
+        //{
+        //    try
+        //    {
+
+        //        // Find the cattle by tag
+        //        var cattle = db.Cattle.SingleOrDefault(cat => cat.Tag == c.Tag && cat.FarmID == c.FarmID);
+
+        //        if (cattle != null)
+        //        {
+        //            // Update the status of the cattle
+        //            cattle.Status = "Dead"; // or any other status you want to set
+
+        //            db.SaveChanges();
+        //        }
+        //        else
+        //        {
+        //            return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Cattle with tag {c.Tag} not found");
+        //        }
+
+        //        return Request.CreateResponse(HttpStatusCode.OK, $"Cattle {c.Tag} Dead ");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error in Dead cattle: {ex.Message}");
+        //    }
+        //}
+
+
+        //[HttpGet]
+        //public HttpResponseMessage ShowCattleInfoByTag(string tag, int farmid)
+        //{
+        //    if (string.IsNullOrEmpty(tag))
+        //    {
+        //        return Request.CreateResponse(HttpStatusCode.BadRequest, "Cattle tag is required.");
+        //    }
+
+        //    // Find the cattle with the specified tag and farm ID
+        //    var cattle = db.Cattle.FirstOrDefault(c => c.Tag == tag && c.FarmID == farmid);
+        //    if (cattle == null)
+        //    {
+        //        return Request.CreateResponse(HttpStatusCode.NotFound, "Cattle not found.");
+        //    }
+
+        //    // Calculate the age from DOB
+        //    var dob = DateTime.Parse(cattle.DOB);
+        //    var age = DateTime.Now.Year - dob.Year;
+        //    if (DateTime.Now.DayOfYear < dob.DayOfYear)
+        //    {
+        //        age--;
+        //    }
+
+        //    // Retrieve the last vaccination details for the cattle
+        //    var lastVaccination = (from iv in db.InjectedVaccination
+        //                           join v in db.Vaccination on iv.VaccinationID equals v.ID
+        //                           where iv.CattleTag == tag && iv.FarmId == farmid
+        //                           orderby iv.Date descending
+        //                           select new
+        //                           {
+        //                               v.Type,
+        //                               iv.Date
+        //                           }).FirstOrDefault();
+
+        //    // Convert the vaccination date outside the LINQ query
+        //    DateTime? vaccineDate = lastVaccination != null ? (DateTime?)DateTime.Parse(lastVaccination.Date) : null;
+
+        //    // Determine the purchase date
+        //    string purchaseDate = cattle.DOB == cattle.DateOfEntryFarm ? null : cattle.DateOfEntryFarm;
+
+        //    // Create the view model
+        //    var cattleInfo = new CattleInfo
+        //    {
+        //        Weight = cattle.Weight,
+        //        Gender = cattle.Gender,
+        //        Age = age,
+        //        PurchaseDate = purchaseDate,
+        //        PurchaseCost = cattle.Cost,
+        //        VaccineType = lastVaccination?.Type,
+        //        VaccineDate = vaccineDate
+        //    };
+
+        //    return Request.CreateResponse(HttpStatusCode.OK, cattleInfo);
+        //}
 
         ////--------------------------------get Avg Milk of last 5 days
         //[HttpGet]

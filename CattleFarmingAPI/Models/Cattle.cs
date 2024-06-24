@@ -25,5 +25,6 @@ namespace CattleFarmingAPI.Models
         public int FarmID { get; set; }
         public string Status { get; set; }
         public Nullable<int> Cost { get; set; }
+        public Nullable<int> CostOfDead { get; set; }
     }
 }

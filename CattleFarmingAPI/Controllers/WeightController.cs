@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Http;
 
 namespace CattleFarmingAPI.Controllers
@@ -12,8 +13,34 @@ namespace CattleFarmingAPI.Controllers
     {
 
         Cattle_Farming_ManagementEntities db = new Cattle_Farming_ManagementEntities();
+        [HttpGet]
+        public HttpResponseMessage GetWeightByTag(String tag)
+        {
+            var weight = db.Weight.Where(f => f.CattleTag == tag).ToList();
+
+            return Request.CreateResponse(HttpStatusCode.OK, weight);
+        }
+
 
         [HttpGet]
+        public HttpResponseMessage
+            GetLastMatricsByTag(string cattleTag)
+        {
+            var matrics =  db.Weight
+                .Where(w => w.CattleTag == cattleTag)
+                .OrderByDescending(w => w.Date)
+                .FirstOrDefault();
+
+            if (matrics == null)
+            {
+               // return NotFound("No weight records found for the given cattle tag.");
+                return Request.CreateResponse(HttpStatusCode.NoContent, "No weight records found for the given cattle tag.");
+            }
+            return Request.CreateResponse(HttpStatusCode.OK, matrics);
+          //  return Ok(weight);
+        }
+    
+    [HttpGet]
         public HttpResponseMessage GetAllWeight()
         {
             try

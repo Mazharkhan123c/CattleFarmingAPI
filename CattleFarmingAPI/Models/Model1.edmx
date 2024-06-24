@@ -20,6 +20,7 @@
           <Property Name="FarmID" Type="int" Nullable="false" />
           <Property Name="Status" Type="varchar" MaxLength="50" />
           <Property Name="Cost" Type="int" />
+          <Property Name="CostOfDead" Type="int" />
         </EntityType>
         <EntityType Name="CattleSale">
           <Key>
@@ -104,8 +105,7 @@
           <Property Name="TotalMilk" Type="decimal" Precision="18" Scale="0" />
           <Property Name="Time" Type="varchar" MaxLength="50" />
           <Property Name="CattleTag" Type="varchar" MaxLength="50" Nullable="false" />
-          <Property Name="UsedMilk" Type="decimal" Precision="18" Scale="0" />
-          <Property Name="Note" Type="varchar" MaxLength="50" />
+          <Property Name="MilkAvailability" Type="int" />
           <Property Name="FarmId" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="MilkSale">
@@ -174,6 +174,7 @@
           <Property Name="CattleTag" Type="varchar" MaxLength="50" />
           <Property Name="Date" Type="varchar" MaxLength="50" />
           <Property Name="Weight" Type="varchar" MaxLength="50" />
+          <Property Name="Height" Type="varchar" MaxLength="50" />
           <Property Name="FarmId" Type="int" Nullable="false" />
         </EntityType>
         <EntityContainer Name="ModelStoreContainer">
@@ -213,6 +214,7 @@
           <Property Name="FarmID" Type="Int32" Nullable="false" />
           <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Cost" Type="Int32" />
+          <Property Name="CostOfDead" Type="Int32" />
         </EntityType>
         <EntityType Name="CattleSale">
           <Key>
@@ -297,8 +299,7 @@
           <Property Name="TotalMilk" Type="Decimal" Precision="18" Scale="0" />
           <Property Name="Time" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="CattleTag" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="UsedMilk" Type="Decimal" Precision="18" Scale="0" />
-          <Property Name="Note" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="MilkAvailability" Type="Int32" />
           <Property Name="FarmId" Type="Int32" Nullable="false" />
         </EntityType>
         <EntityType Name="MilkSale">
@@ -367,6 +368,7 @@
           <Property Name="CattleTag" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Date" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Weight1" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Height" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="FarmId" Type="Int32" Nullable="false" />
         </EntityType>
         <EntityContainer Name="Cattle_Farming_ManagementEntities" annotation:LazyLoadingEnabled="true">
@@ -406,6 +408,7 @@
                 <ScalarProperty Name="FarmID" ColumnName="FarmID" />
                 <ScalarProperty Name="Status" ColumnName="Status" />
                 <ScalarProperty Name="Cost" ColumnName="Cost" />
+                <ScalarProperty Name="CostOfDead" ColumnName="CostOfDead" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -498,8 +501,7 @@
                 <ScalarProperty Name="TotalMilk" ColumnName="TotalMilk" />
                 <ScalarProperty Name="Time" ColumnName="Time" />
                 <ScalarProperty Name="CattleTag" ColumnName="CattleTag" />
-                <ScalarProperty Name="UsedMilk" ColumnName="UsedMilk" />
-                <ScalarProperty Name="Note" ColumnName="Note" />
+                <ScalarProperty Name="MilkAvailability" ColumnName="MilkAvailability" />
                 <ScalarProperty Name="FarmId" ColumnName="FarmId" />
               </MappingFragment>
             </EntityTypeMapping>
@@ -574,6 +576,7 @@
                 <ScalarProperty Name="CattleTag" ColumnName="CattleTag" />
                 <ScalarProperty Name="Date" ColumnName="Date" />
                 <ScalarProperty Name="Weight1" ColumnName="Weight" />
+                <ScalarProperty Name="Height" ColumnName="Height" />
                 <ScalarProperty Name="FarmId" ColumnName="FarmId" />
               </MappingFragment>
             </EntityTypeMapping>

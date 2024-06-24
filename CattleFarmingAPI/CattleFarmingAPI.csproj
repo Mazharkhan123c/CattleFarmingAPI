@@ -179,6 +179,7 @@
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\CattleInfo.cs" />
+    <Compile Include="Models\CattleMilkInfo.cs" />
     <Compile Include="Models\CattleSale.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
